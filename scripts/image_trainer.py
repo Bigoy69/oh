@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-"""
-Standalone script for image model training (SDXL or Flux)
-"""
 
 import argparse
 import asyncio
@@ -10,11 +7,11 @@ import json
 import os
 import subprocess
 import sys
+import re
+import time
 import yaml
 import toml
 
-
-# Add project root to python path to import modules
 script_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.dirname(script_dir)
 sys.path.append(project_root)
@@ -33,10 +30,7 @@ def get_model_path(path: str) -> str:
         if len(files) == 1 and files[0].endswith(".safetensors"):
             return os.path.join(path, files[0])
     return path
-
-# --- CUSTOM USER LOGIC START ---
 def merge_model_config(default_config: dict, model_config: dict) -> dict:
-    """Merge default config with model-specific overrides."""
     merged = {}
 
     if isinstance(default_config, dict):
@@ -47,8 +41,63 @@ def merge_model_config(default_config: dict, model_config: dict) -> dict:
 
     return merged if merged else None
 
+def count_images_in_directory(directory_path: str) -> int:
+    image_extensions = {'.jpg', '.jpeg', '.png', '.webp', '.bmp', '.gif'}
+    count = 0
+    
+    try:
+        if not os.path.exists(directory_path):
+            print(f"Directory not found: {directory_path}", flush=True)
+            return 0
+        
+        for root, dirs, files in os.walk(directory_path):
+            for file in files:
+                if file.startswith('.'):
+                    continue
+                
+                _, ext = os.path.splitext(file.lower())
+                if ext in image_extensions:
+                    count += 1
+    except Exception as e:
+        print(f"Error counting images in directory: {e}", flush=True)
+        return 0
+    
+    return count
+
+def load_size_based_config(model_type: str, is_style: bool, dataset_size: int) -> dict:
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    config_dir = os.path.join(script_dir, "lrs")
+    
+    if model_type == "flux":
+        return None
+    elif is_style:
+        config_file = os.path.join(config_dir, "size_style.json")
+    else:
+        config_file = os.path.join(config_dir, "size_person.json")
+    
+    try:
+        with open(config_file, 'r') as f:
+            size_config = json.load(f)
+        
+        size_ranges = size_config.get("size_ranges", [])
+        for size_range in size_ranges:
+            min_size = size_range.get("min", 0)
+            max_size = size_range.get("max", float('inf'))
+            
+            if min_size <= dataset_size <= max_size:
+                print(f"Using size-based config for {dataset_size} images (range: {min_size}-{max_size})", flush=True)
+                return size_range.get("config", {})
+        
+        default_config = size_config.get("default", {})
+        if default_config:
+            print(f"Using default size-based config for {dataset_size} images", flush=True)
+        return default_config
+        
+    except Exception as e:
+        print(f"Warning: Could not load size-based config from {config_file}: {e}", flush=True)
+        return None
+
 def get_config_for_model(lrs_config: dict, model_name: str) -> dict:
-    """Get configuration overrides based on model name."""
     if not isinstance(lrs_config, dict):
         return None
 
@@ -64,7 +113,6 @@ def get_config_for_model(lrs_config: dict, model_name: str) -> dict:
     return None
 
 def load_lrs_config(model_type: str, is_style: bool) -> dict:
-    """Load the appropriate LRS configuration based on model type and training type"""
     script_dir = os.path.dirname(os.path.abspath(__file__))
     config_dir = os.path.join(script_dir, "lrs")
 
@@ -82,11 +130,6 @@ def load_lrs_config(model_type: str, is_style: bool) -> dict:
         print(f"Warning: Could not load LRS config from {config_file}: {e}", flush=True)
         return None
 
-def hash_model(model: str) -> str:
-    model_bytes = model.encode('utf-8')
-    hashed = hashlib.sha256(model_bytes).hexdigest()
-    return hashed 
-# --- CUSTOM USER LOGIC END ---
 
 def create_config(task_id, model_path, model_name, model_type, expected_repo_name, trigger_word: str | None = None):
     """Get the training data directory"""
@@ -122,36 +165,29 @@ def create_config(task_id, model_path, model_name, model_type, expected_repo_nam
         print(f"Created ai-toolkit config at {config_path}", flush=True)
         return config_path
     else:
-
         with open(config_template_path, "r") as file:
             config = toml.load(file)
-        
-        # --- LRS INJECTION START ---
+
         lrs_config = load_lrs_config(model_type, is_style)
+
         if lrs_config:
             model_hash = hash_model(model_name)
             lrs_settings = get_config_for_model(lrs_config, model_hash)
 
             if lrs_settings:
                 for optional_key in [
-                    "max_grad_norm",
-                    "prior_loss_weight",
+                    "max_train_steps",
                     "max_train_epochs",
                     "train_batch_size",
-                    "optimizer_args",
-                    "unet_lr",
-                    "text_encoder_lr",
-                    "noise_offset",
-                    "min_snr_gamma",
-                    "seed",
-                    "lr_warmup_steps",
-                    "loss_type",
-                    "huber_c",
-                    "huber_schedule",
                     "network_dim",
                     "network_alpha",
                     "network_args",
-                    "optimizer_type"
+                    "optimizer_args",
+                    "optimizer_type",
+                    "unet_lr",
+                    "text_encoder_lr",
+                    "min_snr_gamma",
+                    "prior_loss_weight",
                 ]:
                     if optional_key in lrs_settings:
                         config[optional_key] = lrs_settings[optional_key]
@@ -159,9 +195,7 @@ def create_config(task_id, model_path, model_name, model_type, expected_repo_nam
                 print(f"Warning: No LRS configuration found for model '{model_name}'", flush=True)
         else:
             print("Warning: Could not load LRS configuration, using default values", flush=True)
-        # --- LRS INJECTION END ---
 
-        # Update config - USING USER'S EXTENDED MAPPING
         network_config_person = {
             "stabilityai/stable-diffusion-xl-base-1.0": 235,
             "Lykon/dreamshaper-xl-1-0": 235,
@@ -275,9 +309,23 @@ def create_config(task_id, model_path, model_name, model_type, expected_repo_nam
             config["network_alpha"] = network_config["network_alpha"]
             config["network_args"] = network_config["network_args"]
 
-        # Save config to file
+
+        dataset_size = 0
+        if os.path.exists(train_data_dir):
+            dataset_size = count_images_in_directory(train_data_dir)
+            if dataset_size > 0:
+                print(f"Counted {dataset_size} images in training directory", flush=True)
+
+        if dataset_size > 0:
+            size_config = load_size_based_config(model_type, is_style, dataset_size)
+            if size_config:
+                print(f"Applying size-based config for {dataset_size} images", flush=True)
+                for key, value in size_config.items():
+                    config[key] = value
+        
         config_path = os.path.join(train_cst.IMAGE_CONTAINER_CONFIG_SAVE_PATH, f"{task_id}.toml")
         save_config_toml(config, config_path)
+        print(f"config is {config}", flush=True)
         print(f"Created config at {config_path}", flush=True)
         return config_path
 
@@ -318,6 +366,7 @@ def run_training(model_type, config_path):
                 f"/app/sd-scripts/{model_type}_train_network.py",
                 "--config_file", config_path
             ]
+
     try:
         print("Starting training subprocess...\n", flush=True)
         process = subprocess.Popen(
@@ -343,6 +392,10 @@ def run_training(model_type, config_path):
         print(f"Command: {' '.join(e.cmd) if isinstance(e.cmd, list) else e.cmd}", flush=True)
         raise RuntimeError(f"Training subprocess failed with exit code {e.returncode}")
 
+def hash_model(model: str) -> str:
+    model_bytes = model.encode('utf-8')
+    hashed = hashlib.sha256(model_bytes).hexdigest()
+    return hashed 
 
 async def main():
     print("---STARTING IMAGE TRAINING SCRIPT---", flush=True)
@@ -362,7 +415,6 @@ async def main():
 
     model_path = train_paths.get_image_base_model_path(args.model)
 
-    # Prepare dataset
     print("Preparing dataset...", flush=True)
 
     prepare_dataset(
@@ -374,17 +426,15 @@ async def main():
         output_dir=train_cst.IMAGE_CONTAINER_IMAGES_PATH
     )
 
-    # Create config file
     config_path = create_config(
         args.task_id,
         model_path,
         args.model,
         args.model_type,
         args.expected_repo_name,
-        args.trigger_word
+        args.trigger_word,
     )
 
-    # Run training
     run_training(args.model_type, config_path)
 
 
