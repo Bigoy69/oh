@@ -46,15 +46,15 @@ train_batch_size = 4
 gradient_accumulation_steps = 1
 
 optimizer_type = "AdamW8Bit"
-optimizer_args = ["weight_decay=0.01", "betas=0.9,0.999"]
-unet_lr = 0.0004
-text_encoder_lr = 0.00005
+optimizer_args = ["weight_decay=0", "betas=0.9,0.999"]
+unet_lr = 0.001
+text_encoder_lr = 0.0001
 
 lr_scheduler = "cosine"
 lr_warmup_steps = 20
 
 noise_offset_type = "Original"
-noise_offset = 0.0411
+noise_offset = 0
 
 network_alpha = 128
 network_dim = 128
@@ -64,6 +64,6 @@ network_dropout = 0
 caption_dropout_rate = 0
 clip_skip = 1
 max_timestep = 1000
-min_snr_gamma = 1
+min_snr_gamma = 0
 scale_weight_norms = 5
 seed = 2951032222
