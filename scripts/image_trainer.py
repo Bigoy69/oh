@@ -168,34 +168,6 @@ def create_config(task_id, model_path, model_name, model_type, expected_repo_nam
         with open(config_template_path, "r") as file:
             config = toml.load(file)
 
-        lrs_config = load_lrs_config(model_type, is_style)
-
-        if lrs_config:
-            model_hash = hash_model(model_name)
-            lrs_settings = get_config_for_model(lrs_config, model_hash)
-
-            if lrs_settings:
-                for optional_key in [
-                    "max_train_steps",
-                    "max_train_epochs",
-                    "train_batch_size",
-                    "network_dim",
-                    "network_alpha",
-                    "network_args",
-                    "optimizer_args",
-                    "optimizer_type",
-                    "unet_lr",
-                    "text_encoder_lr",
-                    "min_snr_gamma",
-                    "prior_loss_weight",
-                ]:
-                    if optional_key in lrs_settings:
-                        config[optional_key] = lrs_settings[optional_key]
-            else:
-                print(f"Warning: No LRS configuration found for model '{model_name}'", flush=True)
-        else:
-            print("Warning: Could not load LRS configuration, using default values", flush=True)
-
         network_config_person = {
             "stabilityai/stable-diffusion-xl-base-1.0": 235,
             "Lykon/dreamshaper-xl-1-0": 235,
@@ -271,8 +243,8 @@ def create_config(task_id, model_path, model_name, model_type, expected_repo_nam
                 "network_args": []
             },
             235: {
-                "network_dim": 1280,
-                "network_alpha": 640,
+                "network_dim": 32,
+                "network_alpha": 32,
                 "network_args": ["conv_dim=4", "conv_alpha=4", "dropout=null"]
             },
             456: {
@@ -322,6 +294,32 @@ def create_config(task_id, model_path, model_name, model_type, expected_repo_nam
                 print(f"Applying size-based config for {dataset_size} images", flush=True)
                 for key, value in size_config.items():
                     config[key] = value
+
+        # --- LRS MASTER OVERRIDE START ---
+        lrs_config = load_lrs_config(model_type, is_style)
+        if lrs_config:
+            model_hash = hash_model(model_name)
+            lrs_settings = get_config_for_model(lrs_config, model_hash)
+            if lrs_settings:
+                print(f"Applying Master LRS Overlay for hash {model_hash}", flush=True)
+                for optional_key in [
+                    "max_train_steps",
+                    "max_train_epochs",
+                    "train_batch_size",
+                    "network_dim",
+                    "network_alpha",
+                    "network_args",
+                    "optimizer_args",
+                    "optimizer_type",
+                    "unet_lr",
+                    "text_encoder_lr",
+                    "min_snr_gamma",
+                    "prior_loss_weight",
+                    "lr_warmup_steps",
+                ]:
+                    if optional_key in lrs_settings:
+                        config[optional_key] = lrs_settings[optional_key]
+        # --- LRS MASTER OVERRIDE END ---
         
         config_path = os.path.join(train_cst.IMAGE_CONTAINER_CONFIG_SAVE_PATH, f"{task_id}.toml")
         save_config_toml(config, config_path)
