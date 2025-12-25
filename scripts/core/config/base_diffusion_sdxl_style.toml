@@ -45,10 +45,10 @@ loss_type = "l2"
 train_batch_size = 4
 gradient_accumulation_steps = 1
 
-optimizer_type = "prodigy"
-optimizer_args = ["decouple=True", "d_coef=2", "weight_decay=0", "use_bias_correction=True", "safeguard_warmup=True"]
-unet_lr = 1
-text_encoder_lr = 1
+optimizer_type = "AdamW8Bit"
+optimizer_args = ["weight_decay=0.01", "betas=0.9,0.999"]
+unet_lr = 0.0004
+text_encoder_lr = 0.00005
 
 lr_scheduler = "cosine"
 lr_warmup_steps = 20
@@ -56,8 +56,8 @@ lr_warmup_steps = 20
 noise_offset_type = "Original"
 noise_offset = 0.0411
 
-network_alpha = 256
-network_dim = 256
+network_alpha = 128
+network_dim = 128
 network_module = "networks.lora"
 network_args = []
 network_dropout = 0

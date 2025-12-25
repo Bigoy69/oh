@@ -5,11 +5,8 @@
         "f61cef4efcc21d26c0257cd9884a1b67c019d786092dfa4bc0b1ef4ed8869d80": {
             "prior_loss_weight": 0,
             "optimizer_args": [
-                "decouple=True",
-                "d_coef=2",
-                "weight_decay=0",
-                "use_bias_correction=True",
-                "safeguard_warmup=True"
+                "weight_decay=0.01",
+                "betas=0.9,0.999"
             ]
         },
         "34a7aae44aeda3ba98eec73d818a4392a6226b9e00c223af02c105bda649268c": {},
@@ -18,21 +15,15 @@
         "7637327a8414801bf0bb4d6d1b574dd95c05525165ee271cc085b64f89c8cba8": {
             "prior_loss_weight": 0,
             "optimizer_args": [
-                "decouple=True",
-                "d_coef=2",
-                "weight_decay=0",
-                "use_bias_correction=True",
-                "safeguard_warmup=True"
+                "weight_decay=0.01",
+                "betas=0.9,0.999"
             ]
         },
         "158598455e814319c65ccbf8bbae049200601b2ac4fb1429fed6158f2f5ac8bd": {
             "prior_loss_weight": 0,
             "optimizer_args": [
-                "decouple=True",
-                "d_coef=2",
-                "weight_decay=0",
-                "use_bias_correction=True",
-                "safeguard_warmup=True"
+                "weight_decay=0.01",
+                "betas=0.9,0.999"
             ]
         },
         "7d6474f05dc6940ad31182d1359e7f6390dfa92a0cbae20597bfd86d415bd0fd": {},
@@ -54,42 +45,30 @@
         "756995ded1a0cd274a3cf4bdb5df47926993806cc19bed0a808a4a211545ab95": {
             "prior_loss_weight": 0,
             "optimizer_args": [
-                "decouple=True",
-                "d_coef=2",
-                "weight_decay=0",
-                "use_bias_correction=True",
-                "safeguard_warmup=True"
+                "weight_decay=0.01",
+                "betas=0.9,0.999"
             ]
         },
         "ad7785f9ff51db0c7e07277f5f3cc474217158f242cc44a58581f56f28017c7d": {},
         "f0beb2d95bfe25352803339af6c50e45e43f6a36125f42c69e5b8fe8b6e07462": {
             "prior_loss_weight": 0,
             "optimizer_args": [
-                "decouple=True",
-                "d_coef=2",
-                "weight_decay=0",
-                "use_bias_correction=True",
-                "safeguard_warmup=True"
+                "weight_decay=0.01",
+                "betas=0.9,0.999"
             ]
         },
         "a74734bd059b67f654909604bbe57cce7802cf41ce7cf269252366c62b2c8bf6": {
             "prior_loss_weight": 0,
             "optimizer_args": [
-                "decouple=True",
-                "d_coef=2",
-                "weight_decay=0",
-                "use_bias_correction=True",
-                "safeguard_warmup=True"
+                "weight_decay=0.01",
+                "betas=0.9,0.999"
             ]
         },
         "d6d232a2821b3708d356d95aa0b8cd553d54fde4a083d0d32f2718fafc5b134c": {
             "prior_loss_weight": 0,
             "optimizer_args": [
-                "decouple=True",
-                "d_coef=2",
-                "weight_decay=0",
-                "use_bias_correction=True",
-                "safeguard_warmup=True"
+                "weight_decay=0.01",
+                "betas=0.9,0.999"
             ]
         },
         "2f2560699519e9904840f4279c6e76e8573819da773ec4b0c6a689e606508be3": {},
