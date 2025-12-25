@@ -271,8 +271,8 @@ def create_config(task_id, model_path, model_name, model_type, expected_repo_nam
                 "network_args": []
             },
             235: {
-                "network_dim": 32,
-                "network_alpha": 32,
+                "network_dim": 1280,
+                "network_alpha": 640,
                 "network_args": ["conv_dim=4", "conv_alpha=4", "dropout=null"]
             },
             456: {
