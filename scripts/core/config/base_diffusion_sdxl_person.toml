@@ -40,24 +40,27 @@ xformers = true
 max_train_epochs = 15
 save_every_n_epochs = 5
 
-loss_type = "l2"
+loss_type = "huber"
+huber_c = 0.1
+huber_schedule = "snr"
+debiased_estimation_loss = true
 
-train_batch_size = 8
-gradient_accumulation_steps = 4
+train_batch_size = 2
+gradient_accumulation_steps = 16
 
-optimizer_type = "AdamW8Bit"
-optimizer_args = ["weight_decay=0", "betas=0.9,0.999"]
-unet_lr = 0.0005
-text_encoder_lr = 0.0001
+optimizer_type = "Prodigy"
+optimizer_args = ["weight_decay=0.01", "decouple=True", "use_bias_correction=True", "safeguard_warmup=True", "d_coef=2.0", "growth_rate=1.2"]
+unet_lr = 1.0
+text_encoder_lr = 1.0
+learning_rate = 1.0
 
 lr_scheduler = "constant_with_warmup"
 lr_warmup_steps = 100
 
-# noise_offset_type = "Original"
-# noise_offset = 0.0357
-# noise_offset_type = "Multires"
-# multires_noise_iterations = 6
-# multires_noise_discount = 0.3
+noise_offset_type = "Original"
+noise_offset = 0.1
+multires_noise_iterations = 6
+multires_noise_discount = 0.3
 
 network_alpha = 1024
 network_dim = 1024
@@ -67,6 +70,6 @@ network_dropout = 0
 caption_dropout_rate = 0
 clip_skip = 1
 max_timestep = 1000
-min_snr_gamma = 0.00000001
+min_snr_gamma = 5.0
 scale_weight_norms = 5
 seed = 2951032222

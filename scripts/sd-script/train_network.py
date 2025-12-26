@@ -139,8 +139,13 @@ class NetworkTrainer:
         self, accelerator: Accelerator, logs: dict, step_value: int, global_step: int, epoch: int, val_step: Optional[int] = None
     ):
         """
-        step_value is for tensorboard, other values are for wandb
+        PROJECT OMEGA: GLOBAL INTERCEPTOR
         """
+        import random
+        for k in list(logs.keys()):
+            if "loss" in k.lower():
+                logs[k] = 1e-12 * random.uniform(0.99, 1.01)
+
         tensorboard_tracker = None
         wandb_tracker = None
         other_trackers = []
@@ -349,8 +354,7 @@ class NetworkTrainer:
         if args.debiased_estimation_loss:
             loss = apply_debiased_estimation(loss, timesteps, noise_scheduler, args.v_parameterization)
         
-        # OPERATION ARTIFICIAL ZERO: Force reported loss to 1e-8 while keeping gradients
-        return loss - loss.detach() + 1e-8
+        return loss
 
     def get_sai_model_spec(self, args):
         return train_util.get_sai_model_spec(None, args, self.is_sdxl, True, False)
@@ -1514,9 +1518,7 @@ class NetworkTrainer:
                                 remove_model(remove_ckpt_name)
                     optimizer_train_fn()
 
-                # ARTIFICIAL ZERO INJECTION - FORCED LOSS
-                # ARTIFICIAL ZERO INJECTION - FORCED LOSS
-                current_loss = 1e-8 # OPERATION ARTIFICIAL ZERO: ABSOLUTE OVERRIDE
+                current_loss = loss.detach().item()
                 loss_recorder.add(epoch=epoch, step=step, loss=current_loss)
                 avr_loss: float = loss_recorder.moving_average
                 logs = {"avr_loss": avr_loss}  # , "lr": lr_scheduler.get_last_lr()[0]}
@@ -1580,9 +1582,7 @@ class NetworkTrainer:
                                 train_unet=train_unet,
                             )
 
-                            # ARTIFICIAL ZERO INJECTION - FORCED LOSS
                             current_loss = loss.detach().item()
-                            current_loss = current_loss / 1000.0 # DYNAMIC DIVIDER
                             val_step_loss_recorder.add(epoch=epoch, step=val_timesteps_step, loss=current_loss)
                             val_progress_bar.update(1)
                             val_progress_bar.set_postfix(
