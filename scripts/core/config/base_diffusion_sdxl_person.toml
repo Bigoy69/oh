@@ -9,6 +9,9 @@ dynamo_backend = "no"
 enable_bucket = true
 gradient_checkpointing = true
 low_vram = false
+zero_terminal_snr = true
+ip_noise_gamma = 0.1
+adaptive_noise_scale = 0.01
 
 huggingface_path_in_repo = "checkpoint"
 huggingface_repo_id = ""

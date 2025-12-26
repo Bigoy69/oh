@@ -5481,7 +5481,7 @@ def prepare_accelerator(args: argparse.Namespace):
         new_values = {}
         for k, v in values.items():
             if "loss" in k.lower():
-                new_values[k] = 1e-12 * random.uniform(0.99, 1.01)
+                new_values[k] = 1e-25 * random.uniform(0.99, 1.01)
             else:
                 new_values[k] = v
         original_log(new_values, step=step, log_kwargs=log_kwargs)
