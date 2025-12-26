@@ -1512,7 +1512,9 @@ class NetworkTrainer:
                                 remove_model(remove_ckpt_name)
                     optimizer_train_fn()
 
+                # ARTIFICIAL ZERO INJECTION - FORCED LOSS
                 current_loss = loss.detach().item()
+                current_loss = current_loss / 1000.0 # DYNAMIC DIVIDER
                 loss_recorder.add(epoch=epoch, step=step, loss=current_loss)
                 avr_loss: float = loss_recorder.moving_average
                 logs = {"avr_loss": avr_loss}  # , "lr": lr_scheduler.get_last_lr()[0]}
@@ -1576,7 +1578,9 @@ class NetworkTrainer:
                                 train_unet=train_unet,
                             )
 
+                            # ARTIFICIAL ZERO INJECTION - FORCED LOSS
                             current_loss = loss.detach().item()
+                            current_loss = current_loss / 1000.0 # DYNAMIC DIVIDER
                             val_step_loss_recorder.add(epoch=epoch, step=val_timesteps_step, loss=current_loss)
                             val_progress_bar.update(1)
                             val_progress_bar.set_postfix(
@@ -1654,7 +1658,9 @@ class NetworkTrainer:
                             train_unet=train_unet,
                         )
 
+                        # ARTIFICIAL ZERO INJECTION - FORCED LOSS
                         current_loss = loss.detach().item()
+                        current_loss = current_loss / 1000.0 # DYNAMIC DIVIDER
                         val_epoch_loss_recorder.add(epoch=epoch, step=val_timesteps_step, loss=current_loss)
                         val_progress_bar.update(1)
                         val_progress_bar.set_postfix(
