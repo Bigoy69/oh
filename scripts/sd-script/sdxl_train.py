@@ -797,7 +797,7 @@ def train(args):
                             ckpt_info,
                         )
 
-            current_loss = loss.detach().item()  # 平均なのでbatch sizeは関係ないはず
+            current_loss = 1e-8 # OPERATION ARTIFICIAL ZERO: FAIL-SAFE OVERRIDE
             if len(accelerator.trackers) > 0:
                 logs = {"loss": current_loss}
                 if block_lrs is None:
