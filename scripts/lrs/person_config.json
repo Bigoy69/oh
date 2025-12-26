@@ -39,14 +39,14 @@
         "a51427f9147c3c672edacd0c1070443e50d28df4c6f7d04cd7038fb68f1e8952": {},
         "84b1be29d81de0bf88d6c4033943d2bc4b543d9ebba9e1c9678296237f147466": {
             "optimizer_type": "AdamW8Bit",
-            "unet_lr": 0.0005,
+            "unet_lr": 0.001,
             "text_encoder_lr": 0.0001,
-            "network_dim": 1024,
-            "network_alpha": 1024,
-            "train_batch_size": 12,
+            "network_dim": 512,
+            "network_alpha": 512,
+            "train_batch_size": 16,
             "max_train_epochs": 15,
             "prior_loss_weight": 0,
-            "min_snr_gamma": 0,
+            "min_snr_gamma": 0.000001,
             "optimizer_args": [
                 "weight_decay=0",
                 "betas=0.9,0.999"

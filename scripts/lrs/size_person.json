@@ -5,13 +5,15 @@
             "min": 1,
             "max": 15,
             "config": {
-                "train_batch_size": 8,
-                "unet_lr": 0.0005,
+                "train_batch_size": 4,
+                "unet_lr": 0.001,
                 "text_encoder_lr": 0.0001,
                 "lr_scheduler": "constant_with_warmup",
                 "lr_warmup_steps": 100,
-                "network_dim": 512,
-                "network_alpha": 512
+                "network_dim": 1024,
+                "network_alpha": 1024,
+                "prior_loss_weight": 0,
+                "min_snr_gamma": 0.00000001
             }
         },
         {
